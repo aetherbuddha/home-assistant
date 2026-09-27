@@ -1,0 +1,93 @@
+# ==========================================================
+# Core integrations
+# ==========================================================
+default_config: # Loads the standard set of integrations. Do not remove.
+
+# ==========================================================
+# Interface: themes, custom panels
+# ==========================================================
+frontend:
+  themes: !include_dir_merge_named themes
+
+panel_custom:
+  # Restores Developer Tools in the Home Assistant sidebar
+  - name: developer-tools
+    sidebar_title: Dev tools
+    sidebar_icon: mdi:tools
+    js_url: /api/hassio/app/entrypoint
+    embed_iframe: true
+
+# ==========================================================
+# Automations, scripts, scenes
+# ==========================================================
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# ==========================================================
+# Home Assistant core settings
+# ==========================================================
+homeassistant:
+  external_url: !secret homeassistant_external_url
+  media_dirs:
+    local: /config/music
+    local_screensavers: /config/screensavers
+
+# ==========================================================
+# Package tracking
+# ==========================================================
+template:
+  - trigger:
+      - trigger: time_pattern
+        minutes: "/5"
+      - trigger: homeassistant
+        event: start
+      - trigger: state
+        entity_id: input_button.onovyty_posylky_17track
+    action:
+      - action: seventeentrack.get_packages
+        data:
+          config_entry_id: 01KX8SA1PVQ8DFSBPJH7QZ6ZGT
+        response_variable: result
+    sensor:
+      - name: "17Track усі посилки"
+        unique_id: seventeentrack_all_packages
+        state: "{{ result.packages | count }}"
+        attributes:
+          packages: "{{ result.packages }}"
+
+# ==========================================================
+# REST commands — OSBB access control (gate, wicket, dumpster)
+# ==========================================================
+rest_command:
+  osbb_open_gate:
+    url: !secret osbb_api_url
+    method: POST
+    headers:
+      Authorization: !secret osbb_api_token
+      Content-Type: "application/json"
+    payload: '{"device": "gate"}'
+
+  osbb_open_wicket:
+    url: !secret osbb_api_url
+    method: POST
+    headers:
+      Authorization: !secret osbb_api_token
+      Content-Type: "application/json"
+    payload: '{"device": "wicket"}'
+
+  osbb_open_dump:
+    url: !secret osbb_api_url
+    method: POST
+    headers:
+      Authorization: !secret osbb_api_token
+      Content-Type: "application/json"
+    payload: '{"device": "dump"}'
+
+# ==========================================================
+# Logging
+# ==========================================================
+logger:
+  default: warning
+  logs:
+    custom_components.extended_openai_conversation: debug

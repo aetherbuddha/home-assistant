@@ -1,0 +1,159 @@
+# ==========================================================
+# Birdwatcher — video monitoring of a bird feeder
+# built with ESPHome, providing live streaming and snapshots
+# through the built-in web server. The video stream is sent
+# to Frigate for bird detection and notifications.
+#
+# Features:
+#   • Live video stream (port 8080)
+#   • On-demand snapshots (port 8081)
+#   • Automatic exposure, gain, and white balance
+#
+# ----------------------------------------------------------
+# Hardware platform
+# ----------------------------------------------------------
+#   Board:      Espressif ESP32-S3-DevKitC-1-N16R8
+#   Chipset:    ESP32-S3, dual-core, up to 240 MHz
+#   PSRAM:      8 MB Octal, 80 MHz
+#
+# ----------------------------------------------------------
+# Peripherals
+# ----------------------------------------------------------
+#   Camera:     OV5640 (5 MP) — included camera module,
+#               connected to the ESP32-S3 via ribbon cable
+#
+# ==========================================================
+
+esphome:
+  name: bird-feeder-camera
+  friendly_name: "Камера годівнички"
+
+esp32:
+  board: esp32-s3-devkitc1-n16r8
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+logger:
+
+# ==========================================================
+# Network: WiFi, API, OTA
+# ==========================================================
+api:
+  encryption:
+    key: !secret api_key_cam
+
+ota:
+  - platform: esphome
+    password: !secret pass_ota_cam
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  power_save_mode: NONE
+
+  manual_ip:
+    static_ip: 192.168.0.93
+    gateway: 192.168.0.1
+    subnet: 255.255.255.0
+
+mdns:
+  disabled: false
+
+# ==========================================================
+# I2C — Camera control (SCCB)
+# GPIO4 = SDA, GPIO5 = SCL
+# ==========================================================
+i2c:
+  - id: cam_i2c
+    sda: GPIO4
+    scl: GPIO5
+
+# ==========================================================
+# Camera (ESP32 Camera)
+# ==========================================================
+esp32_camera:
+  id: espcam
+  name: "Камера годівнички"
+
+  external_clock:
+    pin: GPIO15
+    frequency: 20MHz
+
+  i2c_id: cam_i2c
+
+  data_pins:
+    - GPIO11
+    - GPIO9
+    - GPIO8
+    - GPIO10
+    - GPIO12
+    - GPIO18
+    - GPIO17
+    - GPIO16
+
+  vsync_pin: GPIO6
+  href_pin: GPIO7
+  pixel_clock_pin: GPIO13
+
+  # Stable video transport
+  resolution: 640x480
+  pixel_format: jpeg
+  jpeg_quality: 15
+  max_framerate: 5fps
+  idle_framerate: 0.1fps
+  frame_buffer_count: 1
+
+  # Correct orientation
+  vertical_flip: true
+  horizontal_mirror: false
+
+  # Basic image processing
+  brightness: 0
+  contrast: 1
+  saturation: 0
+  special_effect: none
+
+  # Automatic exposure
+  aec_mode: AUTO
+  aec2: true
+  ae_level: 0
+
+  # Automatic gain control
+  agc_mode: AUTO
+  agc_gain_ceiling: 4X
+
+  # Automatic white balance
+  wb_mode: AUTO
+
+# ==========================================================
+# Camera web server — streaming and snapshots
+# ==========================================================
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
+
+  - port: 8081
+    mode: snapshot
+
+# ==========================================================
+# Diagnostic sensors
+# ==========================================================
+sensor:
+  - platform: wifi_signal
+    name: "WiFi сигнал камери годівнички"
+    update_interval: 60s
+
+  - platform: internal_temperature
+    name: "Температура камери годівнички"
+
+# ==========================================================
+# Switches
+# ==========================================================
+switch:
+  - platform: restart
+    name: "Перезавантажити камеру"

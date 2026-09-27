@@ -1,0 +1,83 @@
+# ==========================================================
+# Lightwatcher — an illuminance sensor for automated curtains
+# and lighting built with ESPHome, also serving as a BLE
+# proxy in the Bermuda network for trilateration.
+#
+# Features:
+#   • Ambient light level measurement
+#   • Bermuda network participation as a Bluetooth proxy
+#     for BLE trilateration
+#
+# ----------------------------------------------------------
+# Hardware platform
+# ----------------------------------------------------------
+#   Board:      Espressif ESP32 (rev 3.1)
+#   Chipset:    ESP32, dual-core
+#
+# ----------------------------------------------------------
+# Peripherals
+# ----------------------------------------------------------
+#   Light sensor: VEML7700 — digital ambient light sensor,
+#                 I2C interface
+#                 (SDA GPIO21, SCL GPIO22), address 0x10
+#
+# ==========================================================
+
+esphome:
+  name: lightwatcher
+  friendly_name: Світломір
+  min_version: 2026.4.0
+  name_add_mac_suffix: false
+
+esp32:
+  variant: esp32
+  framework:
+    type: esp-idf
+    advanced:
+      minimum_chip_revision: "3.1"
+      sram1_as_iram: true
+
+logger:
+
+# ==========================================================
+# Network: WiFi, API, OTA
+# ==========================================================
+api:
+  encryption:
+    key: !secret esphome_web_9a7ef0__encryption_key
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# ==========================================================
+# I2C — Light sensor (VEML7700)
+# GPIO21 = SDA, GPIO22 = SCL
+# ==========================================================
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+
+sensor:
+  - platform: veml7700
+    address: 0x10
+    update_interval: 10s
+    ambient_light:
+      name: "Curtain Illuminance"
+      id: curtain_illuminance
+
+# ==========================================================
+# Bluetooth — Bermuda network (BLE trilateration)
+# ==========================================================
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+bluetooth_proxy:
+  active: true

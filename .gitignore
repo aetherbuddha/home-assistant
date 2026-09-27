@@ -1,0 +1,52 @@
+# Runtime databases
+
+/home-assistant_v2.db*
+/zigbee.db
+
+# Home Assistant storage — runtime state and UI integration credentials
+
+/.storage/
+
+# Secrets — never commit to Git
+
+/secrets.yaml
+
+# Cache and generated data
+
+/.cache/
+/deps/
+/image/
+/tts/
+/.cloud/
+
+# Large media content — not configuration
+
+/screensavers/
+/music/
+
+# Zigbee2MQTT — runtime data and live config containing the MQTT password;
+
+# automatically managed and rewritten by Zigbee2MQTT
+
+/zigbee2mqtt/
+
+# Home Assistant blueprints — managed through the UI
+
+/blueprints/
+
+# Home Assistant frontend resources — managed through HACS or the UI
+
+/www/
+
+# Other runtime files
+
+/.ha_run.lock
+/home-assistant.log.fault
+/.shopping_list.json
+/.hass_configurator_prefs.json
+/esphome/.git.backup/
+/esphome/.device-builder-peer-link-key.bin
+/esphome/.device-builder-preferences.json
+/esphome/.device-builder.json
+/esphome/.device-builder.json.lock
+/custom_components/

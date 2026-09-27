@@ -1,0 +1,111 @@
+uv_mknuti_printer:
+  sequence:
+  - type: turn_on
+    device_id: c375b913044dc8579536e15f5f2f88e8
+    entity_id: cf84a1c258f9cc212add5f0169b7de12
+    domain: switch
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 15
+      milliseconds: 0
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      entity_id: switch.river_2_pro_ac_enabled
+    data: {}
+  alias: Увімкнути принтер
+  description: ''
+vimknuti_printer:
+  sequence:
+  - type: turn_off
+    device_id: c375b913044dc8579536e15f5f2f88e8
+    entity_id: cf84a1c258f9cc212add5f0169b7de12
+    domain: switch
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.river_2_pro_ac_enabled
+    data: {}
+  alias: Вимкнути принтер
+  description: ''
+vimknuti_kondiuki:
+  sequence:
+  - device_id: f4658257f55af8f8dff2a103c18182dc
+    domain: climate
+    entity_id: 460dd730281d15d98690bf5ab6f3e6c1
+    type: set_hvac_mode
+    hvac_mode: 'off'
+  - device_id: fb2370214a2b5e34e62e34c7f287f81b
+    domain: climate
+    entity_id: 08aa2b68fa11e0dff9c851d968ab2d41
+    type: set_hvac_mode
+    hvac_mode: 'off'
+  - device_id: f615f50eff3807b7a9cbd375a3da404f
+    domain: climate
+    entity_id: a77f5e9de26988baade537322968317d
+    type: set_hvac_mode
+    hvac_mode: 'off'
+  alias: Вимкнути кондюки
+  description: ''
+  icon: mdi:hvac-off
+dodati_posilku_17track:
+  alias: Відстежити посилку
+  description: Додає посилку в 17Track за ТТН і назвою
+  fields:
+    tracking_number:
+      name: ТТН
+      description: Номер накладної
+      required: true
+      selector:
+        text:
+    friendly_name:
+      name: Що в коробці
+      description: Назва посилки
+      required: true
+      selector:
+        text:
+  sequence:
+  - action: seventeentrack.add_package
+    data:
+      config_entry_id: 01KX8SA1PVQ8DFSBPJH7QZ6ZGT
+      package_tracking_number: '{{ tracking_number }}'
+      package_friendly_name: '{{ friendly_name }}'
+  mode: single
+vidkryty_vorota:
+  alias: Відкрити ворота
+  sequence:
+  - action: rest_command.osbb_open_gate
+vidkryty_khvirtku:
+  alias: Відкрити хвіртку
+  sequence:
+  - action: rest_command.osbb_open_wicket
+vidkryty_smitnyk:
+  alias: Відкрити смітник
+  sequence:
+  - action: rest_command.osbb_open_dump
+tv_zapustiti_vtikalniu:
+  alias: 'TV: Увімкнути заставку'
+  sequence:
+  - if:
+    - condition: state
+      entity_id: media_player.vitalnia_televizor
+      state: 'off'
+    then:
+    - data:
+        mac: 60:75:6C:AC:D8:5C
+        broadcast_address: 192.168.0.255
+      action: wake_on_lan.send_magic_packet
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 8
+        milliseconds: 0
+  - target:
+      entity_id: media_player.vitalnia_televizor
+    data:
+      command: system.launcher/launch
+      payload:
+        id: org.vitalii.aerialscreensaver2
+    action: webostv.command
+  mode: single

@@ -1,0 +1,497 @@
+- id: '1781109883068'
+  alias: 'Клімат: Підняти ролети'
+  description: ''
+  triggers:
+  - type: illuminance
+    device_id: 01357bb37b76ca807863ff526c3ff7e4
+    entity_id: 2417e35ec8022157f31a099e6572c130
+    domain: sensor
+    trigger: device
+    below: 5000
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  conditions:
+  - condition: device
+    device_id: 3d14a7fccb4b5b90765d0152b3990812
+    domain: cover
+    entity_id: 0559a80d7de8673608ef73037171922b
+    type: is_closed
+  actions:
+  - device_id: 3d14a7fccb4b5b90765d0152b3990812
+    domain: cover
+    entity_id: 0559a80d7de8673608ef73037171922b
+    type: open
+  mode: single
+- id: '1781177872071'
+  alias: 'Клімат: Опустити ролети'
+  description: ''
+  triggers:
+  - type: illuminance
+    device_id: 01357bb37b76ca807863ff526c3ff7e4
+    entity_id: 2417e35ec8022157f31a099e6572c130
+    domain: sensor
+    trigger: device
+    above: 10000
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  conditions:
+  - condition: device
+    device_id: 3d14a7fccb4b5b90765d0152b3990812
+    domain: cover
+    entity_id: 0559a80d7de8673608ef73037171922b
+    type: is_open
+  actions:
+  - device_id: 3d14a7fccb4b5b90765d0152b3990812
+    domain: cover
+    entity_id: 0559a80d7de8673608ef73037171922b
+    type: close
+  mode: single
+- id: '1782044318047'
+  alias: 'Система: Повний бекап'
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - action: hassio.backup_full
+    metadata: {}
+    data:
+      compressed: true
+      homeassistant_exclude_database: false
+  mode: single
+- id: '1782330068542'
+  alias: 'Кухня: Двері холодильника відкрито'
+  description: ''
+  triggers:
+  - type: opened
+    device_id: 386e11a474ef7c19526960575fd007a7
+    entity_id: d9f11474adfe3cd072b9f98ed1852b71
+    domain: binary_sensor
+    trigger: device
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+    enabled: true
+  conditions: []
+  actions:
+  - action: notify.send_message
+    metadata: {}
+    target:
+      device_id:
+      - f85482b6a6edeac78d5345b7d4c06413
+      - 353badd8215d7fc5bbeee996603efeef
+    data:
+      message: Закрийте хтось холодильник!
+  mode: single
+- id: '1782383571888'
+  alias: 'Принтер: Знеструмлення принтера'
+  description: ''
+  triggers:
+  - type: value
+    device_id: 71b0b4bafaa157866c95802f90331f99
+    entity_id: 8671be684cd4fd6c43d43239ae84039a
+    domain: sensor
+    trigger: device
+    below: 10
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions:
+  - type: is_temperature
+    condition: device
+    device_id: 71b0b4bafaa157866c95802f90331f99
+    entity_id: cc4a9229352b4891c49ffe8a1af1c775
+    domain: sensor
+    above: 35
+  - condition: state
+    entity_id: sensor.kabinet_bambu_lab_a1_status_druku
+    state:
+    - finish
+  - condition: time
+    after: 01:00:00
+    before: 08:00:00
+  actions:
+  - action: script.vimknuti_printer
+    metadata: {}
+    data: {}
+  mode: single
+- id: '1782684023737'
+  alias: 'Клімат: Вранішній бриз'
+  description: ''
+  triggers:
+  - trigger: time
+    at: 09:00:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  conditions:
+  - type: is_temperature
+    condition: device
+    device_id: 78c1765fe1ef83428f61bcb868169618
+    entity_id: 9a720e12afb76ff48a52b414becc92b8
+    domain: sensor
+    above: 24
+  actions:
+  - device_id: f4658257f55af8f8dff2a103c18182dc
+    domain: climate
+    entity_id: 460dd730281d15d98690bf5ab6f3e6c1
+    type: set_hvac_mode
+    hvac_mode: auto
+  mode: single
+- id: '1783123966138'
+  alias: 'Клімат: Ранкове сонце'
+  description: ''
+  triggers:
+  - trigger: sun
+    event: sunrise
+    offset: 0
+  conditions: []
+  actions:
+  - device_id: 3d14a7fccb4b5b90765d0152b3990812
+    domain: cover
+    entity_id: 0559a80d7de8673608ef73037171922b
+    type: open
+  mode: single
+- id: '1784060499333'
+  alias: 'TV: Автопродовження сесії Developer Mode'
+  description: Щопонеділка о 5:00 вмикає ТВ, продовжує сесію Developer Mode і вимикає
+    назад
+  triggers:
+  - at: 05:00:00
+    trigger: time
+    weekday:
+    - mon
+  conditions:
+  - condition: state
+    entity_id: media_player.vitalnia_televizor
+    state: 'off'
+  actions:
+  - data:
+      mac: 60:75:6C:AC:D8:5C
+      broadcast_address: 192.168.0.255
+    action: wake_on_lan.send_magic_packet
+  - delay:
+      seconds: 12
+  - target:
+      entity_id: media_player.vitalnia_televizor
+    data:
+      source: Developer Mode
+    action: media_player.select_source
+  - delay:
+      seconds: 5
+  - target:
+      entity_id: media_player.vitalnia_televizor
+    data:
+      button: DOWN
+    action: webostv.button
+  - delay:
+      seconds: 1
+  - target:
+      entity_id: media_player.vitalnia_televizor
+    data:
+      button: DOWN
+    action: webostv.button
+  - delay:
+      seconds: 1
+  - target:
+      entity_id: media_player.vitalnia_televizor
+    data:
+      button: DOWN
+    action: webostv.button
+  - delay:
+      seconds: 1
+  - target:
+      entity_id: media_player.vitalnia_televizor
+    data:
+      button: DOWN
+    action: webostv.button
+  - delay:
+      seconds: 1
+  - target:
+      entity_id: media_player.vitalnia_televizor
+    data:
+      button: ENTER
+    action: webostv.button
+  - delay:
+      seconds: 5
+  - target:
+      entity_id: media_player.vitalnia_televizor
+    action: media_player.turn_off
+  mode: single
+- id: '1784813937524'
+  alias: 'Годівничка: Виявлено птаха'
+  description: Надсилає на iPhone сповіщення з фото події Frigate
+  triggers:
+  - trigger: mqtt
+    topic: frigate/reviews
+  conditions:
+  - condition: template
+    value_template: "{{\n  trigger.payload_json.type == \"new\"\n  and trigger.payload_json.after.severity
+      == \"alert\"\n  and trigger.payload_json.after.camera == \"birdwatcher\"\n  and
+      \"bird\" in trigger.payload_json.after.data.objects\n  and (trigger.payload_json.after.data.detections
+      | count) > 0\n}}"
+  actions:
+  - variables:
+      review_id: '{{ trigger.payload_json.after.id }}'
+      event_id: '{{ trigger.payload_json.after.data.detections[0] }}'
+  - action: notify.mobile_app_korsun
+    data:
+      title: Птах біля годівнички
+      message: Frigate виявив птаха. Натисніть, щоб відкрити фото.
+      data:
+        image: /api/frigate/notifications/{{ event_id }}/thumbnail.jpg
+        url: /api/frigate/notifications/{{ event_id }}/snapshot.jpg
+        tag: frigate-{{ review_id }}
+        group: birdwatcher
+  mode: queued
+  max: 10
+- id: '1784823863256'
+  alias: 'Awtrix: Температура у вітальні'
+  description: Надсилає температуру опалення вітальні на годинник Awtrix
+  triggers:
+  - entity_id:
+    - sensor.vitalnia_peredpokii_temperatura
+    trigger: state
+  - minutes: /2
+    trigger: time_pattern
+  actions:
+  - action: mqtt.publish
+    data:
+      topic: awtrix_b767cc/custom/studio_temp
+      retain: false
+      payload: "{\n  \"text\": \"{{ states('sensor.vitalnia_peredpokii_temperatura')
+        | float(0) | round(0) }}°C\",\n  \"icon\": \"2355\",\n  \"pushIcon\": 0\n}"
+  mode: restart
+- id: '1784825146286'
+  alias: 'Awtrix: Статус 3D-друку Bambu'
+  description: Надсилає час до закінчення друку на годинник Awtrix у форматі ГГ:ХХ
+  triggers:
+  - entity_id: sensor.kabinet_bambu_lab_a1_chas_do_kintsia_druku
+    trigger: state
+  - minutes: /1
+    trigger: time_pattern
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{% set s = states(''sensor.kabinet_bambu_lab_a1_chas_do_kintsia_druku'')
+          %} {{ s in [''unknown'', ''unavailable'', ''none''] or (s | float(0)) <=
+          0 }}'
+      sequence:
+      - action: mqtt.publish
+        data:
+          topic: awtrix_b767cc/custom/bambu_print
+          payload: ''
+    - conditions:
+      - condition: template
+        value_template: '{% set s = states(''sensor.kabinet_bambu_lab_a1_chas_do_kintsia_druku'')
+          %} {{ s not in [''unknown'', ''unavailable'', ''none''] and (s | float(0))
+          > 0 }}'
+      sequence:
+      - action: mqtt.publish
+        data:
+          topic: awtrix_b767cc/custom/bambu_print
+          retain: false
+          payload: "{% set total_hours = states('sensor.kabinet_bambu_lab_a1_chas_do_kintsia_druku')
+            | float(0) %} {% set hours = total_hours | int %} {% set minutes = ((total_hours
+            - hours) * 60) | round(0) | int %} {% set minutes_formatted = '{:02d}'.format(minutes)
+            %} {\n  \"text\": \"{{ hours }}:{{ minutes_formatted }}\",\n  \"icon\":
+            \"69827\",\n  \"pushIcon\": 0\n}"
+  mode: restart
+- id: '1784831481318'
+  alias: 'Куб: витяжка'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.kub_side
+    to:
+    - '4'
+  conditions: []
+  actions:
+  - action: fan.toggle
+    metadata: {}
+    target:
+      entity_id: fan.komora_vitiazhka
+    data: {}
+  mode: single
+- id: '1784894849466'
+  alias: 'Куб: брама'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.kub_side
+    to:
+    - '1'
+  conditions: []
+  actions:
+  - action: script.toggle
+    metadata: {}
+    target:
+      entity_id: script.vidkryty_vorota
+    data: {}
+  mode: single
+- id: '1785013802469'
+  alias: 'Принтер: Автозапуск розетки при друці'
+  description: ''
+  triggers:
+  - trigger: fan.turned_on
+    target:
+      device_id: 71b0b4bafaa157866c95802f90331f99
+    options:
+      behavior: each
+  conditions:
+  - condition: switch.is_off
+    target:
+      device_id: c375b913044dc8579536e15f5f2f88e8
+    options:
+      behavior: any
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      device_id: c375b913044dc8579536e15f5f2f88e8
+    data: {}
+  mode: single
+- id: '1785842999962'
+  alias: 'Куб: втикальня'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.kub_side
+    to:
+    - '2'
+  conditions: []
+  actions:
+  - action: script.toggle
+    metadata: {}
+    target:
+      entity_id: script.tv_zapustiti_vtikalniu
+    data: {}
+  mode: single
+- id: '1785844781545'
+  alias: 'TV: Втикальня'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - media_player.vitalnia_televizor
+    to:
+    - 'on'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  - trigger: state
+    entity_id:
+    - media_player.vitalnia_televizor
+    to:
+    - idle
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  - trigger: state
+    entity_id:
+    - media_player.vitalnia_televizor
+    to:
+    - standby
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  - trigger: state
+    entity_id:
+    - media_player.vitalnia_televizor
+    to:
+    - paused
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  conditions:
+  - condition: state
+    entity_id: media_player.vitalnia_televizor
+    state:
+    - idle
+    - standby
+    - paused
+    - 'on'
+  actions:
+  - action: script.toggle
+    metadata: {}
+    target:
+      entity_id: script.tv_zapustiti_vtikalniu
+    data: {}
+  mode: single
+- id: '1788369203459'
+  alias: 'Awtrix: Статус прання'
+  description: Надсилає час до закінчення прання на годинник Awtrix у форматі ГГ:ХХ
+  triggers:
+  - entity_id: sensor.pralka_remaining_time
+    trigger: state
+  - minutes: /1
+    trigger: time_pattern
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{% set s = states(''sensor.pralka_remaining_time'') %} {{
+          s in [''unknown'', ''unavailable'', ''none'', ''''] }}'
+      sequence:
+      - action: mqtt.publish
+        data:
+          topic: awtrix_b767cc/custom/pralka
+          payload: ''
+    - conditions:
+      - condition: template
+        value_template: '{% set s = states(''sensor.pralka_remaining_time'') %} {{
+          s not in [''unknown'', ''unavailable'', ''none'', ''''] }}'
+      sequence:
+      - action: mqtt.publish
+        data:
+          topic: awtrix_b767cc/custom/pralka
+          retain: false
+          payload: "{% set s = states('sensor.pralka_remaining_time') %} {% set parts
+            = s.split(':') %} {% set now_dt = now() %} {% set target = now_dt.replace(hour=parts[0]|int,
+            minute=parts[1]|int, second=0, microsecond=0) %} {% if target < now_dt
+            %}\n  {% set target = target + timedelta(days=1) %}\n{% endif %} {% set
+            diff = (target - now_dt).total_seconds() %} {% if diff <= 60 %}\n  {%
+            set payload_out = '' %}\n{% endif %} {% set hours = (diff // 3600) | int
+            %} {% set minutes = ((diff % 3600) // 60) | int %} {\n  \"text\": \"{{
+            hours }}:{{ '{:02d}'.format(minutes) }}\",\n  \"icon\": \"54246\",\n  \"pushIcon\":
+            0\n}"
+  mode: restart
+- id: '1788382403767'
+  alias: 'Принтер: Гарантоване знструмлення'
+  description: ''
+  triggers:
+  - trigger: time
+    at: 03:00:00
+  conditions:
+  - condition: state
+    entity_id: sensor.kabinet_bambu_lab_a1_status_druku
+    state:
+    - finish
+    - unknown
+    - unavailable
+    - idle
+    - failed
+    - offline
+  actions:
+  - action: script.vimknuti_printer
+    metadata: {}
+    data: {}
+  mode: single
